@@ -34,7 +34,7 @@ References:
 - `wakatime_openclaw.py`: core heartbeat model, queue/retry, status CLI.
 - `wakatime_hooks.py`: OpenClaw hook handlers.
 - `wakatime_wrapper.py`: tracked wrappers for read/write/exec/session.
-- `setup_wakatime.py`: installer for `~/.openclaw/plugins` symlinks and shell integration.
+- `setup_wakatime.py`: one-command installer (config patch + gateway restart + verification).
 - `zsh-wakatime-hook.sh`: optional shell command tracking hook.
 - `hooks/wakatime-im/`: OpenClaw internal hook to track chat/command interactions.
 
@@ -44,12 +44,24 @@ References:
 pip install --user wakatime
 python3 setup_wakatime.py
 python3 ~/.openclaw/plugins/wakatime_openclaw.py --status
-python3 ~/.openclaw/plugins/wakatime_openclaw.py --test
 # optional console scripts after install:
 # openclaw-wakatime --status
 ```
 
-Enable OpenClaw internal IM tracking (`message:received`, `message:sent`, `command`):
+`setup_wakatime.py` now automatically:
+- patches `~/.openclaw/openclaw.json` to enable `hooks/wakatime-im`
+- restarts OpenClaw gateway
+- verifies hook readiness (`openclaw hooks info wakatime-im`)
+- sends a test heartbeat
+
+Useful setup flags:
+
+```bash
+python3 setup_wakatime.py --no-restart
+python3 setup_wakatime.py --no-zsh --no-test
+```
+
+Manual OpenClaw config (only if you skip auto-setup):
 
 ```json
 {
@@ -100,6 +112,7 @@ with tracked_session("feature-x", "Working on bugfix"):
 
 ```bash
 python3 -m py_compile *.py
-python3 -m pip install -e '.[dev]'
-pytest
+python3 -m venv .venv-local
+./.venv-local/bin/python -m pip install pytest
+./.venv-local/bin/python -m pytest -q
 ```
