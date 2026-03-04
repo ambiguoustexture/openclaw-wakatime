@@ -12,8 +12,10 @@ Features:
 import argparse
 import copy
 import json
+import os
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -23,6 +25,7 @@ OPENCLAW_STATE_DIR = Path.home() / ".openclaw"
 OPENCLAW_PLUGIN_DIR = OPENCLAW_STATE_DIR / "plugins"
 OPENCLAW_CONFIG_FILE = OPENCLAW_STATE_DIR / "openclaw.json"
 CONFIG_DIR = OPENCLAW_STATE_DIR / "wakatime"
+WAKATIME_CONFIG_FILE = Path.home() / ".wakatime.cfg"
 ZSHRC = Path.home() / ".zshrc"
 
 PLUGIN_FILES = [
@@ -48,10 +51,18 @@ def check_wakatime() -> tuple[bool, str]:
     return False, ""
 
 
-def check_api_key() -> tuple[bool, str]:
-    config_file = Path.home() / ".wakatime.cfg"
+def _mask_api_key(value: str) -> str:
+    token = (value or "").strip()
+    if len(token) > 14:
+        return f"{token[:10]}...{token[-4:]}"
+    if token:
+        return "***"
+    return ""
+
+
+def read_api_key(config_file: Path = WAKATIME_CONFIG_FILE) -> str:
     if not config_file.exists():
-        return False, ""
+        return ""
 
     for line in config_file.read_text().splitlines():
         clean = line.strip()
@@ -59,11 +70,96 @@ def check_api_key() -> tuple[bool, str]:
             continue
         key, value = clean.split("=", 1)
         if key.strip() == "api_key":
-            token = value.strip()
-            if len(token) > 14:
-                return True, f"{token[:10]}...{token[-4:]}"
-            return True, "***"
-    return False, ""
+            return value.strip()
+    return ""
+
+
+def upsert_wakatime_config(content: str, api_key: str) -> str:
+    normalized_key = api_key.strip()
+    lines = content.splitlines()
+    if not lines:
+        return f"[settings]\napi_key = {normalized_key}\n"
+
+    in_settings = False
+    found = False
+    settings_seen = False
+    insert_at = None
+
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            if in_settings and insert_at is None:
+                insert_at = idx
+            in_settings = stripped.lower() == "[settings]"
+            settings_seen = settings_seen or in_settings
+            continue
+        if in_settings and stripped and not stripped.startswith("#") and "=" in stripped:
+            key, _value = stripped.split("=", 1)
+            if key.strip() == "api_key":
+                lines[idx] = f"api_key = {normalized_key}"
+                found = True
+
+    if not found:
+        if settings_seen:
+            if insert_at is None:
+                insert_at = len(lines)
+            lines.insert(insert_at, f"api_key = {normalized_key}")
+        else:
+            if lines and lines[-1].strip():
+                lines.append("")
+            lines.extend(["[settings]", f"api_key = {normalized_key}"])
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_api_key(api_key: str, config_file: Path = WAKATIME_CONFIG_FILE) -> tuple[bool, str]:
+    try:
+        current = config_file.read_text(encoding="utf-8") if config_file.exists() else ""
+        updated = upsert_wakatime_config(current, api_key)
+        config_file.write_text(updated, encoding="utf-8")
+        config_file.chmod(0o600)
+        return True, str(config_file)
+    except Exception as exc:
+        return False, str(exc)
+
+
+def ensure_api_key(
+    cli_key: str = "",
+    non_interactive: bool = False,
+    save_key: bool = True,
+    config_file: Path = WAKATIME_CONFIG_FILE,
+) -> tuple[bool, str, str]:
+    provided = (cli_key or "").strip()
+    if provided:
+        os.environ["WAKATIME_API_KEY"] = provided
+        if save_key:
+            ok, _ = write_api_key(provided, config_file=config_file)
+            if not ok:
+                return False, "", "write-failed"
+        return True, _mask_api_key(provided), "arg"
+
+    file_key = read_api_key(config_file=config_file)
+    if file_key:
+        os.environ["WAKATIME_API_KEY"] = file_key
+        return True, _mask_api_key(file_key), "config"
+
+    env_key = os.environ.get("WAKATIME_API_KEY", "").strip()
+    if env_key:
+        return True, _mask_api_key(env_key), "env"
+
+    if non_interactive or not sys.stdin.isatty():
+        return False, "", "missing"
+
+    prompt_key = input("   Enter your WakaTime API key (starts with waka_): ").strip()
+    if not prompt_key:
+        return False, "", "missing"
+
+    os.environ["WAKATIME_API_KEY"] = prompt_key
+    if save_key:
+        ok, _ = write_api_key(prompt_key, config_file=config_file)
+        if not ok:
+            return False, "", "write-failed"
+    return True, _mask_api_key(prompt_key), "prompt"
 
 
 def install_plugin_files() -> bool:
@@ -252,6 +348,21 @@ def test_integration() -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Setup WakaTime for OpenClaw")
     parser.add_argument(
+        "--waka-key",
+        default="",
+        help="Provide WakaTime API key for fresh setup (recommended in CI/non-interactive runs)",
+    )
+    parser.add_argument(
+        "--no-save-key",
+        action="store_true",
+        help="Do not write API key to ~/.wakatime.cfg (use env/process only)",
+    )
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help="Do not prompt for missing API key; fail instead",
+    )
+    parser.add_argument(
         "--no-zsh",
         action="store_true",
         help="Skip zsh shell integration",
@@ -280,11 +391,33 @@ def main() -> int:
         return 1
     print(f"   ✓ WakaTime CLI: {version}")
 
-    has_key, key_preview = check_api_key()
+    save_key = not args.no_save_key
+    has_key, key_preview, key_source = ensure_api_key(
+        cli_key=args.waka_key,
+        non_interactive=args.non_interactive,
+        save_key=save_key,
+    )
     if not has_key:
-        print("   ✗ API key not found in ~/.wakatime.cfg")
+        if key_source == "write-failed":
+            print("   ✗ Failed to write API key to ~/.wakatime.cfg")
+            print("   Try using --no-save-key or ensure write permissions for ~/.wakatime.cfg")
+            return 1
+        print("   ✗ API key not found")
+        print("   Provide one using --waka-key <WAKA_KEY>, or set WAKATIME_API_KEY env.")
+        if not args.non_interactive:
+            print("   For interactive setup, run this in a terminal and enter key when prompted.")
         return 1
-    print(f"   ✓ API key: {key_preview}")
+    source_label = {
+        "arg": "--waka-key",
+        "config": "~/.wakatime.cfg",
+        "env": "WAKATIME_API_KEY",
+        "prompt": "prompt",
+    }.get(key_source, key_source)
+    print(f"   ✓ API key: {key_preview} (source: {source_label})")
+    if key_source in {"arg", "prompt"} and save_key:
+        print("   ✓ Saved API key to ~/.wakatime.cfg")
+    if key_source in {"arg", "prompt"} and not save_key:
+        print("   ! API key is not persisted (--no-save-key); it will be required again next run")
 
     print("\n2. Installing compatibility plugin files...")
     if not install_plugin_files():

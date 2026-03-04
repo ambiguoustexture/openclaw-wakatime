@@ -43,6 +43,8 @@ References:
 ```bash
 pip install --user wakatime
 python3 setup_wakatime.py
+# fresh start (no ~/.wakatime.cfg yet):
+python3 setup_wakatime.py --waka-key waka_xxx_your_key
 python3 ~/.openclaw/plugins/wakatime_openclaw.py --status
 # optional console scripts after install:
 # openclaw-wakatime --status
@@ -57,6 +59,8 @@ python3 ~/.openclaw/plugins/wakatime_openclaw.py --status
 Useful setup flags:
 
 ```bash
+python3 setup_wakatime.py --waka-key waka_xxx_your_key
+python3 setup_wakatime.py --non-interactive --waka-key waka_xxx_your_key --no-save-key
 python3 setup_wakatime.py --no-restart
 python3 setup_wakatime.py --no-zsh --no-test
 ```
@@ -101,6 +105,8 @@ with tracked_session("feature-x", "Working on bugfix"):
 
 - Check CLI: `~/.local/bin/wakatime --version`
 - Check key: `grep api_key ~/.wakatime.cfg`
+- For first-time setup in CI/headless environments:
+  `python3 setup_wakatime.py --non-interactive --waka-key <WAKA_KEY>`
 - Check plugin status: `python3 ~/.openclaw/plugins/wakatime_openclaw.py --status`
 - Retry queue: `python3 ~/.openclaw/plugins/wakatime_openclaw.py --process-queue`
 - Send one synthetic hook heartbeat:
