@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openclaw-wakatime"
+version = "1.1.0"
+description = "WakaTime integration for OpenClaw sessions"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "OpenClaw Contributors" }]
+keywords = ["wakatime", "openclaw", "productivity", "heartbeat"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX",
+  "Intended Audience :: Developers",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+openclaw-wakatime = "wakatime_openclaw:_main"
+openclaw-wakatime-setup = "setup_wakatime:main"
+
+[tool.setuptools]
+py-modules = [
+  "wakatime_openclaw",
+  "wakatime_hooks",
+  "wakatime_wrapper",
+  "setup_wakatime",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

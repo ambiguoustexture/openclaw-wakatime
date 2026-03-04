@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.venv/
+.venv-local/
+
+# Local runtime state
+*.log
+queue.jsonl
+sessions.jsonl
+state.json
+
+# Local backup artifacts
+*.bak-*
