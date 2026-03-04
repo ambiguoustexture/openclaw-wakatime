@@ -5,7 +5,7 @@ if [[ -n "${OPENCLAW_WAKATIME_DISABLE_HOOK}" || -n "${WAKATIME_OPENCLAW_DISABLE_
   return
 fi
 
-typeset -g OPENCLAW_WAKATIME_PLUGIN_VERSION="1.1.0"
+typeset -g OPENCLAW_WAKATIME_PLUGIN_VERSION="1.2.0"
 
 _openclaw_wakatime_detect_version() {
   local version="${OPENCLAW_VERSION:-${OPENCLAW_WAKATIME_OPENCLAW_VERSION:-}}"

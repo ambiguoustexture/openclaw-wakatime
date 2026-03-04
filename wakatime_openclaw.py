@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-PLUGIN_VERSION = "1.1.0"
+PLUGIN_VERSION = "1.2.0"
 OPENCLAW_CONFIG_FILE = Path.home() / ".openclaw" / "openclaw.json"
 
 
