@@ -2,7 +2,7 @@
 
 TypeScript-native WakaTime plugin for OpenClaw.
 
-Published npm package: `@re/openclaw-wakatime`
+Published npm package: `@ambiguoustr/openclaw-wakatime`
 
 This plugin tracks OpenClaw runtime activity and sends heartbeats through the official `wakatime` CLI:
 
@@ -67,7 +67,7 @@ Then it restarts gateway by default and prints plugin status.
 ## Install (npm)
 
 ```bash
-openclaw plugins install @re/openclaw-wakatime --pin
+openclaw plugins install @ambiguoustr/openclaw-wakatime --pin
 openclaw plugins info openclaw-wakatime
 ```
 

@@ -1,12 +1,12 @@
 # Release Guide
 
-This document is the single runbook for publishing `@re/openclaw-wakatime` and submitting community listings.
+This document is the single runbook for publishing `@ambiguoustr/openclaw-wakatime` and submitting community listings.
 
 Current package:
 
-- npm: `@re/openclaw-wakatime`
+- npm: `@ambiguoustr/openclaw-wakatime`
 - repo: `https://github.com/ambiguoustexture/openclaw-wakatime`
-- install: `openclaw plugins install @re/openclaw-wakatime`
+- install: `openclaw plugins install @ambiguoustr/openclaw-wakatime`
 
 ## 1) Preflight Checks
 
@@ -42,7 +42,7 @@ Commit:
 
 ```bash
 git add -A
-git commit -m "feat: release @re/openclaw-wakatime 0.9.9"
+git commit -m "feat: release @ambiguoustr/openclaw-wakatime 0.9.9"
 ```
 
 Push:
@@ -69,7 +69,7 @@ npm publish --access public
 Verify published version:
 
 ```bash
-npm view @re/openclaw-wakatime version
+npm view @ambiguoustr/openclaw-wakatime version
 ```
 
 ## 4) Submit to OpenClaw Community Plugins
@@ -95,13 +95,13 @@ Submission action:
 Candidate line for this plugin:
 
 ```text
-WakaTime — Track OpenClaw messages, commands, sessions, and tool usage in WakaTime. npm: `@re/openclaw-wakatime` repo: `https://github.com/ambiguoustexture/openclaw-wakatime` install: `openclaw plugins install @re/openclaw-wakatime`
+WakaTime — Track OpenClaw messages, commands, sessions, and tool usage in WakaTime. npm: `@ambiguoustr/openclaw-wakatime` repo: `https://github.com/ambiguoustexture/openclaw-wakatime` install: `openclaw plugins install @ambiguoustr/openclaw-wakatime`
 ```
 
 Suggested PR title:
 
 ```text
-docs(community-plugins): add @re/openclaw-wakatime
+docs(community-plugins): add @ambiguoustr/openclaw-wakatime
 ```
 
 ## 5) Submit to WakaTime Community Plugins
@@ -122,9 +122,9 @@ Hi WakaTime team,
 
 I built a new community plugin integration:
 - Name: openclaw-wakatime
-- npm: @re/openclaw-wakatime
+- npm: @ambiguoustr/openclaw-wakatime
 - Repo: https://github.com/ambiguoustexture/openclaw-wakatime
-- Install: openclaw plugins install @re/openclaw-wakatime
+- Install: openclaw plugins install @ambiguoustr/openclaw-wakatime
 
 It sends heartbeats through wakatime-cli and includes plugin/version signature via --plugin.
 Please consider adding it to the WakaTime Community plugins list.
@@ -137,7 +137,7 @@ Thanks!
 Check that production users can install and load:
 
 ```bash
-openclaw plugins install @re/openclaw-wakatime --pin
+openclaw plugins install @ambiguoustr/openclaw-wakatime --pin
 openclaw gateway restart
 openclaw plugins info openclaw-wakatime
 ```

@@ -1,5 +1,5 @@
 {
-  "name": "@re/openclaw-wakatime",
+  "name": "@ambiguoustr/openclaw-wakatime",
   "version": "0.9.9",
   "description": "Official-style OpenClaw plugin for tracking activity in WakaTime",
   "type": "module",
