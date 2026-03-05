@@ -2,7 +2,7 @@
   "id": "openclaw-wakatime",
   "name": "WakaTime",
   "description": "Track OpenClaw messages, commands, sessions, and tool usage in WakaTime",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,

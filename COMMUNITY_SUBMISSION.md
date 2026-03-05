@@ -2,7 +2,7 @@
 
 Published package:
 
-- npm: `@ambiguoustr/openclaw-wakatime@0.9.9`
+- npm: `@ambiguoustr/openclaw-wakatime@0.9.10`
 - repo: `https://github.com/ambiguoustexture/openclaw-wakatime`
 - install: `openclaw plugins install @ambiguoustr/openclaw-wakatime`
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.9.10] - 2026-03-05
+
+### Changed
+- For `entityType=file` heartbeats, stop forcing `--language` and let `wakatime-cli` auto-detect language.
+- Keep explicit `--language` for non-file (`app`) entities.
+- Added Node tests for WakaTime CLI argument construction behavior.
+
 ## [0.9.9] - 2026-03-05
 
 ### Changed

@@ -8,7 +8,7 @@ This plugin tracks OpenClaw runtime activity and sends heartbeats through the of
 
 - `message_received` / `message_sent`
 - `command:*` (via internal hook registration)
-- `after_tool_call` (`read/edit/write` use file entities from tool params such as `path`/`file_path`, with language inferred from extension)
+- `after_tool_call` (`read/edit/write` use file entities from tool params such as `path`/`file_path`; file language is auto-detected by `wakatime-cli`)
 - `session_start` / `session_end`
 
 Runtime files are written under `~/.openclaw/wakatime/`:

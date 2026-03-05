@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import type { OpenClawConfig, PluginLogger } from "openclaw/plugin-sdk";
 import { runPluginCommandWithTimeout } from "openclaw/plugin-sdk";
+import { buildWakatimeCommand } from "./wakatime-command.js";
 
 const DEFAULT_PROJECT = "agent-vibe-coding";
 const DEFAULT_CATEGORY = "ai coding";
@@ -583,43 +584,11 @@ export class WakaTimeTracker {
   }
 
   private buildCommand(wakaBin: string, heartbeat: Heartbeat): string[] {
-    const argv = [
+    return buildWakatimeCommand({
       wakaBin,
-      "--entity",
-      heartbeat.entity,
-      "--language",
-      heartbeat.language,
-      "--project",
-      heartbeat.project,
-      "--category",
-      heartbeat.category,
-      "--time",
-      String(heartbeat.timestamp),
-      "--plugin",
-      this.pluginSignature,
-    ];
-
-    if (heartbeat.entityType !== "file") {
-      argv.push("--entity-type", heartbeat.entityType);
-    }
-
-    if (heartbeat.isWrite) {
-      argv.push("--write");
-    }
-
-    if (heartbeat.lines > 0) {
-      argv.push("--lines", String(heartbeat.lines));
-    }
-
-    if (heartbeat.lineAdditions > 0) {
-      argv.push("--line-additions", String(heartbeat.lineAdditions));
-    }
-
-    if (heartbeat.lineDeletions > 0) {
-      argv.push("--line-deletions", String(heartbeat.lineDeletions));
-    }
-
-    return argv;
+      heartbeat,
+      pluginSignature: this.pluginSignature,
+    });
   }
 
   private async resolveWakatimeBin(): Promise<string | null> {

@@ -42,7 +42,7 @@ Commit:
 
 ```bash
 git add -A
-git commit -m "feat: release @ambiguoustr/openclaw-wakatime 0.9.9"
+git commit -m "feat: release @ambiguoustr/openclaw-wakatime 0.9.10"
 ```
 
 Push:

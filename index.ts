@@ -4,7 +4,7 @@ import type { InternalHookEvent, OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { WakaTimeTracker, loadTrackerConfig } from "./src/wakatime-tracker.js";
 
 const PLUGIN_ID = "openclaw-wakatime";
-const PLUGIN_VERSION = "0.9.9";
+const PLUGIN_VERSION = "0.9.10";
 const FILE_PATH_TOOLS = new Set(["read", "edit", "write"]);
 const WRITE_FILE_TOOLS = new Set(["edit", "write"]);
 
