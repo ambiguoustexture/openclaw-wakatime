@@ -130,6 +130,7 @@ This repository follows the OpenClaw plugin spec:
 Release and community submission runbook:
 
 - `RELEASE.md`
+- `COMMUNITY_SUBMISSION.md`
 
 ## Migration From Legacy Version
 
