@@ -1,45 +1,51 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a small Python plugin set for WakaTime integration in OpenClaw.
-Public project name is `openclaw-wakatime`; Python module names remain `wakatime_*` for compatibility.
-- `wakatime_openclaw.py`: core heartbeat model, project/language detection, queue/retry, and session stats.
-- `wakatime_hooks.py`: event-hook layer that maps OpenClaw lifecycle/tool events to tracking calls.
-- `wakatime_wrapper.py`: helper wrappers/context managers for tracked exec/read/write flows.
-- `setup_wakatime.py`: local setup and environment checks.
-- `zsh-wakatime-hook.sh`: optional shell command tracking hook.
+This repository ships an OpenClaw plugin implemented in TypeScript.
 
-Runtime state is written outside this repo under `~/.openclaw/wakatime/` (for example `queue.jsonl`, `plugin.log`, `sessions.jsonl`).
+- `openclaw.plugin.json`: required OpenClaw plugin manifest + config schema.
+- `index.ts`: plugin entrypoint (`register(api)`).
+- `src/wakatime-tracker.ts`: heartbeat model, queue/retry, throttling, and event mapping.
+- `setup_wakatime.mjs`: local installer that patches `~/.openclaw/openclaw.json` for plugin loading.
+
+Runtime state is written under `~/.openclaw/wakatime/` (`queue.jsonl`, `plugin.log`, `sessions.jsonl`).
 
 ## Build, Test, and Development Commands
-Use Python 3.12+.
-- `python3 setup_wakatime.py`: validate prerequisites and install shell integration.
-- `python3 wakatime_openclaw.py`: send a test heartbeat and verify core plugin wiring.
-- `python3 wakatime_hooks.py`: smoke-test hook imports/entrypoints.
-- `python3 wakatime_wrapper.py`: end-to-end wrapper smoke test (writes `/tmp/wakatime_test.txt`).
-- `python3 -m py_compile *.py`: fast syntax check across all modules.
+- `node setup_wakatime.mjs`: configure plugin load path and enable plugin entry.
+- `openclaw plugins info openclaw-wakatime`: verify plugin discovery and status.
+- `node --check setup_wakatime.mjs`: quick syntax validation for setup script.
+- `openclaw plugins list | rg openclaw-wakatime`: verify plugin is discoverable.
 
 ## Coding Style & Naming Conventions
-- Follow PEP 8 with 4-space indentation.
-- Use `snake_case` for functions/variables and `PascalCase` for classes.
-- Keep modules focused: core tracking in `wakatime_openclaw.py`, adapters in hooks/wrappers.
-- Add type hints on new public functions and keep docstrings short/actionable.
-- Guard script-only logic with `if __name__ == "__main__":`.
+- Use TypeScript modules (ESM) with clear type aliases and small focused helpers.
+- Use `camelCase` for variables/functions and `PascalCase` for classes/types.
+- Keep plugin API wiring in `index.ts`; keep heartbeat logic in `src/wakatime-tracker.ts`.
+- Prefer explicit config parsing and safe fallbacks for env/config values.
 
 ## Testing Guidelines
-There is currently no formal automated test suite in this directory.
-- Run `python3 -m py_compile *.py` before submitting changes.
-- Run at least one relevant smoke script above for behavioral changes.
-- For queue/retry changes, inspect `~/.openclaw/wakatime/queue.jsonl` and `plugin.log`.
-- For non-trivial new logic, add `pytest` tests as `tests/test_<module>.py` (happy path + failure path).
+There is currently no formal test suite in this directory.
+
+Before submitting changes:
+- Run `node --check setup_wakatime.mjs`.
+- Run `openclaw plugins info openclaw-wakatime` after setup.
+- Trigger one real message/command and inspect `~/.openclaw/wakatime/plugin.log`.
+
+For non-trivial changes, add Node tests under `tests/*.test.mjs`.
 
 ## Commit & Pull Request Guidelines
-Git history is not available in this checkout, so use Conventional Commit style.
-- Examples: `feat: add session idle heartbeat guard`, `fix: handle missing wakatime binary`.
-- Keep commits focused and atomic.
-- PRs should include: summary, why the change is needed, verification commands run, and any config/runtime impact.
+Use Conventional Commit style.
+
+Examples:
+- `feat: add tool heartbeat throttling`
+- `fix: guard queue flush reentrancy`
+- `chore: update plugin manifest ui hints`
+
+PRs should include:
+- summary and rationale
+- verification commands run
+- config/runtime impact (`plugins.entries.openclaw-wakatime.config`)
 
 ## Security & Configuration Tips
-- Never commit API keys or local config values.
-- Read secrets from `~/.wakatime.cfg` or environment variables.
-- Redact sensitive command arguments and paths when sharing logs.
+- Never commit API keys or local secret config.
+- Read WakaTime secrets from `~/.wakatime.cfg` or `WAKATIME_API_KEY`.
+- Keep plugin path trust explicit via `plugins.allow` in hardened environments.

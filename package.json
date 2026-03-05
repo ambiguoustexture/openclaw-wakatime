@@ -1,0 +1,36 @@
+{
+  "name": "@re/openclaw-wakatime",
+  "version": "0.9.9",
+  "description": "Official-style OpenClaw plugin for tracking activity in WakaTime",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "index.ts",
+    "openclaw.plugin.json",
+    "src",
+    "setup_wakatime.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "scripts": {
+    "check": "node --check setup_wakatime.mjs",
+    "smoke": "openclaw plugins info openclaw-wakatime"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.0"
+  },
+  "keywords": [
+    "openclaw",
+    "plugin",
+    "wakatime",
+    "telemetry"
+  ]
+}

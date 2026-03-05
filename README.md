@@ -1,127 +1,144 @@
-# WakaTime for OpenClaw
+# openclaw-wakatime
 
-Repository name: `openclaw-wakatime`.
-Python module name (kept for compatibility): `wakatime_openclaw`.
+TypeScript-native WakaTime plugin for OpenClaw.
 
-## Why this project
+Published npm package: `@re/openclaw-wakatime`
 
-OpenClaw sessions include more than file edits (tools, shell, web calls, token usage). This plugin tracks those events while keeping WakaTime-compatible heartbeat semantics.
+This plugin tracks OpenClaw runtime activity and sends heartbeats through the official `wakatime` CLI:
 
-## Official-doc aligned behavior
+- `message_received` / `message_sent`
+- `command:*` (via internal hook registration)
+- `after_tool_call` (`read/edit/write` use file entities from tool params such as `path`/`file_path`, with language inferred from extension)
+- `session_start` / `session_end`
 
-Based on WakaTime plugin guidance:
+Runtime files are written under `~/.openclaw/wakatime/`:
 
-- Sends heartbeats through WakaTime CLI (no custom API client).
-- Includes `--plugin` for plugin identification.
-- Uses `--entity-type app` for non-file entities such as `openclaw://session/...`.
-- Sends absolute file paths for file entities.
-- Applies non-write heartbeat throttling (default 120 seconds per entity).
-- Queues failed heartbeats and retries from `~/.openclaw/wakatime/queue.jsonl`.
-- Defaults all activity to:
-  - `project=agent-vibe-coding`
-  - `category=ai coding`
-  Override with env vars:
-  - `OPENCLAW_WAKATIME_PROJECT`
-  - `OPENCLAW_WAKATIME_CATEGORY`
-  Set `OPENCLAW_WAKATIME_USE_CONTEXT_PROJECT=1` to restore context/path-based project splitting.
+- `plugin.log`
+- `queue.jsonl`
+- `sessions.jsonl`
 
-References:
-- https://wakatime.com/help/creating-plugin
-- https://wakatime.com/developers
+## Requirements
 
-## Repository layout
+- OpenClaw `>= 2026.3.x`
+- WakaTime CLI installed and authenticated (`~/.wakatime.cfg` or `WAKATIME_API_KEY`)
+- Command examples use POSIX shell syntax; on Windows use equivalent PowerShell/CMD commands.
 
-- `wakatime_openclaw.py`: core heartbeat model, queue/retry, status CLI.
-- `wakatime_hooks.py`: OpenClaw hook handlers.
-- `wakatime_wrapper.py`: tracked wrappers for read/write/exec/session.
-- `setup_wakatime.py`: one-command installer (config patch + gateway restart + verification).
-- `zsh-wakatime-hook.sh`: deprecated legacy shell command tracking hook (opt-in only).
-- `hooks/wakatime-im/`: OpenClaw internal hook to track chat/command interactions.
+## Authentication
 
-## Quick start
+The plugin does not store or manage your WakaTime API key directly.
+It only invokes the official `wakatime` CLI.
 
-```bash
-pip install --user wakatime
-python3 setup_wakatime.py
-# fresh start (no ~/.wakatime.cfg yet):
-python3 setup_wakatime.py --waka-key waka_xxx_your_key
-python3 ~/.openclaw/plugins/wakatime_openclaw.py --status
-# optional console scripts after install:
-# openclaw-wakatime --status
-```
+Key resolution is handled by WakaTime CLI:
 
-`setup_wakatime.py` now automatically:
-- patches `~/.openclaw/openclaw.json` to enable `hooks/wakatime-im`
-- restarts OpenClaw gateway
-- verifies hook readiness (`openclaw hooks info wakatime-im`)
-- sends a test heartbeat
-- skips zsh shell integration by default (legacy path is deprecated)
+- Recommended: `~/.wakatime.cfg` with `api_key = waka_...`
+- Alternative: environment variable `WAKATIME_API_KEY`
 
-Useful setup flags:
+Prefer `~/.wakatime.cfg` for reliability, because shell environment variables are not always inherited by the OpenClaw gateway process.
+
+## Fresh Start (new machine)
+
+1. Install and authenticate WakaTime CLI.
+2. Confirm key is available (for example with `~/.wakatime.cfg`).
+3. Install/enable this plugin.
+4. Restart gateway (`openclaw gateway restart`).
+5. Trigger one real message/tool call and verify heartbeats.
+
+## Missing/invalid key behavior
+
+- Plugin still loads in OpenClaw.
+- Heartbeat sending fails until credentials are fixed.
+- Failed heartbeats are queued in `~/.openclaw/wakatime/queue.jsonl`.
+- After fixing credentials, queued heartbeats are retried automatically.
+
+## Install (local path)
 
 ```bash
-python3 setup_wakatime.py --waka-key waka_xxx_your_key
-python3 setup_wakatime.py --non-interactive --waka-key waka_xxx_your_key --no-save-key
-python3 setup_wakatime.py --no-restart
-python3 setup_wakatime.py --no-test
-# legacy only:
-python3 setup_wakatime.py --install-zsh-hook
+cd ~/.openclaw/plugins/openclaw-wakatime
+node setup_wakatime.mjs
 ```
 
-Manual OpenClaw config (only if you skip auto-setup):
+The setup script updates `~/.openclaw/openclaw.json`:
+
+- `plugins.load.paths` includes this directory
+- `plugins.entries.openclaw-wakatime.enabled = true`
+
+Then it restarts gateway by default and prints plugin status.
+
+## Install (npm)
+
+```bash
+openclaw plugins install @re/openclaw-wakatime --pin
+openclaw plugins info openclaw-wakatime
+```
+
+## Configure
+
+Plugin config lives at:
+
+`plugins.entries.openclaw-wakatime.config`
+
+Example:
 
 ```json
 {
-  "hooks": {
-    "internal": {
-      "load": {
-        "extraDirs": ["/home/re/.openclaw/plugins/openclaw-wakatime/hooks"]
-      },
-      "entries": {
-        "wakatime-im": { "enabled": true }
+  "plugins": {
+    "entries": {
+      "openclaw-wakatime": {
+        "enabled": true,
+        "config": {
+          "enabled": true,
+          "project": "agent-vibe-coding",
+          "category": "ai coding",
+          "useContextProject": false,
+          "heartbeatIntervalSeconds": 120,
+          "queueRetryBatchSize": 50,
+          "queueFlushIntervalSeconds": 60,
+          "trackMessages": true,
+          "trackCommands": true,
+          "trackTools": true,
+          "trackSessions": true
+        }
       }
     }
   }
 }
 ```
 
-## Runtime files
+After config edits, restart gateway.
 
-Runtime state is stored under `~/.openclaw/wakatime/`:
-
-- `plugin.log`
-- `queue.jsonl`
-- `sessions.jsonl`
-
-## Python usage
-
-```python
-from wakatime_wrapper import tracked_session, tracked_read, tracked_write, tracked_exec
-
-with tracked_session("feature-x", "Working on bugfix"):
-    content = tracked_read("main.py")
-    tracked_write("main.py", content + "\n# updated")
-    print(tracked_exec("git status"))
-```
-
-## Troubleshooting
-
-- Check CLI: `~/.local/bin/wakatime --version`
-- Check key: `grep api_key ~/.wakatime.cfg`
-- For first-time setup in CI/headless environments:
-  `python3 setup_wakatime.py --non-interactive --waka-key <WAKA_KEY>`
-- Check plugin status: `python3 ~/.openclaw/plugins/wakatime_openclaw.py --status`
-- Retry queue: `python3 ~/.openclaw/plugins/wakatime_openclaw.py --process-queue`
-- Send one synthetic hook heartbeat:
-  `python3 ~/.openclaw/plugins/wakatime_openclaw.py --track-hook --event-type message --event-action received --channel-id telegram --conversation-id local-test`
-- For `file` heartbeats, make sure the file actually exists. WakaTime CLI will skip non-existing file paths.
-- Dashboard/status endpoints can lag by a few minutes. If a test heartbeat is not visible immediately, wait and refresh.
-
-## Development
+## Verify
 
 ```bash
-python3 -m py_compile *.py
-python3 -m venv .venv-local
-./.venv-local/bin/python -m pip install pytest
-./.venv-local/bin/python -m pytest -q
+openclaw plugins info openclaw-wakatime
+openclaw plugins list
 ```
+
+Then send a real channel message or command and check:
+
+```bash
+tail -f ~/.openclaw/wakatime/plugin.log
+```
+
+## Packaging Notes
+
+This repository follows the OpenClaw plugin spec:
+
+- `openclaw.plugin.json` manifest (required)
+- TypeScript plugin entrypoint (`index.ts`)
+- package metadata with `openclaw.extensions`
+
+Release and community submission runbook:
+
+- `RELEASE.md`
+
+## Migration From Legacy Version
+
+`0.9.9` is a full TS rewrite.
+
+Removed runtime paths:
+
+- Python tracker modules (`wakatime_openclaw.py`, `wakatime_hooks.py`, `wakatime_wrapper.py`)
+- legacy `hooks/wakatime-im` bridge
+- legacy zsh preexec hook integration
+
+If you previously used those paths, switch to plugin config under `plugins.entries.openclaw-wakatime`.

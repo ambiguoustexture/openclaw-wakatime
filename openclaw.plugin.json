@@ -1,0 +1,86 @@
+{
+  "id": "openclaw-wakatime",
+  "name": "WakaTime",
+  "description": "Track OpenClaw messages, commands, sessions, and tool usage in WakaTime",
+  "version": "0.9.9",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": { "type": "boolean" },
+      "project": { "type": "string", "minLength": 1 },
+      "category": { "type": "string", "minLength": 1 },
+      "useContextProject": { "type": "boolean" },
+      "wakatimeBin": { "type": "string", "minLength": 1 },
+      "heartbeatIntervalSeconds": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 3600
+      },
+      "queueRetryBatchSize": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 500
+      },
+      "queueFlushIntervalSeconds": {
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 3600
+      },
+      "trackMessages": { "type": "boolean" },
+      "trackCommands": { "type": "boolean" },
+      "trackTools": { "type": "boolean" },
+      "trackSessions": { "type": "boolean" }
+    }
+  },
+  "uiHints": {
+    "enabled": {
+      "label": "Enable WakaTime Tracking",
+      "help": "Master toggle for this plugin"
+    },
+    "project": {
+      "label": "Default Project",
+      "help": "WakaTime project name used for OpenClaw activity"
+    },
+    "category": {
+      "label": "Default Category",
+      "help": "WakaTime category for heartbeats (for example: ai coding)"
+    },
+    "useContextProject": {
+      "label": "Context-based Project",
+      "help": "Derive project names from channel/tool context"
+    },
+    "wakatimeBin": {
+      "label": "WakaTime Binary Path",
+      "help": "Optional absolute path to the wakatime CLI"
+    },
+    "heartbeatIntervalSeconds": {
+      "label": "Read Heartbeat Interval",
+      "help": "Minimum seconds between non-write heartbeats per entity"
+    },
+    "queueRetryBatchSize": {
+      "label": "Queue Retry Batch",
+      "help": "Max queued heartbeats retried per flush"
+    },
+    "queueFlushIntervalSeconds": {
+      "label": "Queue Flush Interval",
+      "help": "Background retry cadence in seconds"
+    },
+    "trackMessages": {
+      "label": "Track Message Events",
+      "help": "Track incoming/outgoing channel messages"
+    },
+    "trackCommands": {
+      "label": "Track Command Events",
+      "help": "Track slash commands via internal hook events"
+    },
+    "trackTools": {
+      "label": "Track Tool Events",
+      "help": "Track tool usage from after_tool_call"
+    },
+    "trackSessions": {
+      "label": "Track Session Events",
+      "help": "Track session start and end"
+    }
+  }
+}

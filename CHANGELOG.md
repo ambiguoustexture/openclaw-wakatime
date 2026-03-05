@@ -2,21 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
-
-### Added
-- Fresh-start API key flow in setup:
-  - `--waka-key` for explicit key input
-  - interactive key prompt when key is missing
-  - optional `--no-save-key` mode for non-persistent runs
-  - `--non-interactive` mode for CI/headless installs
-- WakaTime config helpers to upsert `api_key` into `~/.wakatime.cfg`.
-- Tests covering key upsert/persistence behavior in `tests/test_setup.py`.
+## [0.9.9] - 2026-03-05
 
 ### Changed
-- Deprecated legacy `zsh-wakatime-hook.sh` integration in setup flow.
-- `setup_wakatime.py` now skips zsh hook installation by default; `--install-zsh-hook` is required for legacy opt-in.
-- `--no-zsh` is kept as a deprecated no-op for backward compatibility.
+- Rewrote the plugin as a TypeScript-native OpenClaw plugin using `openclaw.plugin.json` + `index.ts`.
+- Migrated tracking integration to plugin APIs (`api.on` and `api.registerHook`) for messages, commands, tools, and sessions.
+- Added TS heartbeat pipeline with queue retry, throttling, and runtime logging under `~/.openclaw/wakatime/`.
+- Switched setup flow to Node script (`setup_wakatime.mjs`) that configures `plugins.load.paths` and `plugins.entries`.
+
+### Removed
+- Python runtime tracker modules.
+- Legacy `hooks/wakatime-im` bridge files.
+- Legacy zsh preexec integration from setup path.
 
 ## [1.2.0] - 2026-03-04
 
