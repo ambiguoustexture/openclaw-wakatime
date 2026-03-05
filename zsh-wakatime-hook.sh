@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 # WakaTime hook for shell command tracking in OpenClaw sessions.
+# Deprecated: prefer official WakaTime shell plugins when shell tracking is needed.
 
 if [[ -n "${OPENCLAW_WAKATIME_DISABLE_HOOK}" || -n "${WAKATIME_OPENCLAW_DISABLE_HOOK}" ]]; then
   return
@@ -46,7 +47,7 @@ _openclaw_wakatime_preexec() {
     --language Shell \
     --project openclaw-shell \
     --plugin "${OPENCLAW_WAKATIME_PLUGIN_ID}" \
-    --write >/dev/null 2>&1 &
+    --write >/dev/null 2>&1 &!
 }
 
 autoload -Uz add-zsh-hook

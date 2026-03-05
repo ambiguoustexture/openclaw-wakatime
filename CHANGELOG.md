@@ -13,6 +13,11 @@ All notable changes to this project are documented in this file.
 - WakaTime config helpers to upsert `api_key` into `~/.wakatime.cfg`.
 - Tests covering key upsert/persistence behavior in `tests/test_setup.py`.
 
+### Changed
+- Deprecated legacy `zsh-wakatime-hook.sh` integration in setup flow.
+- `setup_wakatime.py` now skips zsh hook installation by default; `--install-zsh-hook` is required for legacy opt-in.
+- `--no-zsh` is kept as a deprecated no-op for backward compatibility.
+
 ## [1.2.0] - 2026-03-04
 
 ### Added

@@ -7,6 +7,7 @@ Features:
 - installs compatibility symlinks under ~/.openclaw/plugins
 - configures OpenClaw internal hook loading for hooks/wakatime-im
 - optionally restarts OpenClaw gateway and verifies hook readiness
+- keeps legacy zsh hook integration as deprecated opt-in only
 """
 
 import argparse
@@ -365,7 +366,12 @@ def main() -> int:
     parser.add_argument(
         "--no-zsh",
         action="store_true",
-        help="Skip zsh shell integration",
+        help="Deprecated no-op; zsh shell integration is no longer installed by default",
+    )
+    parser.add_argument(
+        "--install-zsh-hook",
+        action="store_true",
+        help="Deprecated: install the legacy zsh hook into ~/.zshrc",
     )
     parser.add_argument(
         "--no-restart",
@@ -378,6 +384,8 @@ def main() -> int:
         help="Skip sending WakaTime test heartbeat",
     )
     args = parser.parse_args()
+    if args.no_zsh and args.install_zsh_hook:
+        print("   ! Both --no-zsh and --install-zsh-hook were provided; honoring --install-zsh-hook")
 
     print("=" * 50)
     print("WakaTime for OpenClaw - Setup")
@@ -438,11 +446,15 @@ def main() -> int:
     else:
         print("\n5. Skipping gateway restart (--no-restart)")
 
-    if not args.no_zsh:
-        print("\n7. Installing zsh integration...")
+    if args.install_zsh_hook:
+        print("\n7. Installing deprecated zsh integration (--install-zsh-hook)...")
+        print("   ! Deprecated: prefer official WakaTime shell plugins for shell command tracking")
         install_zsh_integration()
     else:
-        print("\n7. Skipping zsh integration (--no-zsh)")
+        print("\n7. Skipping deprecated zsh integration (default)")
+        if args.no_zsh:
+            print("   ! --no-zsh is deprecated and now a no-op")
+        print("   ! Use --install-zsh-hook only if you explicitly need the legacy local hook")
 
     if not args.no_test:
         print("\n8. Sending test heartbeat...")
@@ -454,11 +466,18 @@ def main() -> int:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     print("\nSetup complete.")
     print("Next steps:")
-    print("1. If shell aliases were installed, run: source ~/.zshrc")
-    print("2. Check plugin status: waka-status")
-    print("3. Open dashboard: https://wakatime.com/dashboard")
+    if args.install_zsh_hook:
+        print("1. If shell aliases were installed, run: source ~/.zshrc")
+        print("2. Check plugin status: waka-status")
+        print("3. Open dashboard: https://wakatime.com/dashboard")
+    else:
+        print("1. Check plugin status: python3 ~/.openclaw/plugins/wakatime_openclaw.py --status")
+        print("2. Open dashboard: https://wakatime.com/dashboard")
     if not hook_ok:
-        print("4. Run `openclaw hooks list` and `openclaw hooks info wakatime-im` to troubleshoot hook status.")
+        if args.install_zsh_hook:
+            print("4. Run `openclaw hooks list` and `openclaw hooks info wakatime-im` to troubleshoot hook status.")
+        else:
+            print("3. Run `openclaw hooks list` and `openclaw hooks info wakatime-im` to troubleshoot hook status.")
     return 0
 
 

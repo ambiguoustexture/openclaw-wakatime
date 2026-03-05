@@ -35,7 +35,7 @@ References:
 - `wakatime_hooks.py`: OpenClaw hook handlers.
 - `wakatime_wrapper.py`: tracked wrappers for read/write/exec/session.
 - `setup_wakatime.py`: one-command installer (config patch + gateway restart + verification).
-- `zsh-wakatime-hook.sh`: optional shell command tracking hook.
+- `zsh-wakatime-hook.sh`: deprecated legacy shell command tracking hook (opt-in only).
 - `hooks/wakatime-im/`: OpenClaw internal hook to track chat/command interactions.
 
 ## Quick start
@@ -55,6 +55,7 @@ python3 ~/.openclaw/plugins/wakatime_openclaw.py --status
 - restarts OpenClaw gateway
 - verifies hook readiness (`openclaw hooks info wakatime-im`)
 - sends a test heartbeat
+- skips zsh shell integration by default (legacy path is deprecated)
 
 Useful setup flags:
 
@@ -62,7 +63,9 @@ Useful setup flags:
 python3 setup_wakatime.py --waka-key waka_xxx_your_key
 python3 setup_wakatime.py --non-interactive --waka-key waka_xxx_your_key --no-save-key
 python3 setup_wakatime.py --no-restart
-python3 setup_wakatime.py --no-zsh --no-test
+python3 setup_wakatime.py --no-test
+# legacy only:
+python3 setup_wakatime.py --install-zsh-hook
 ```
 
 Manual OpenClaw config (only if you skip auto-setup):
